@@ -1,0 +1,66 @@
+[tool.poetry]
+name = "tetris-online-backend"
+version = "0.1.0"
+description = ""
+authors = ["Maxim Tetyushkin <maxim.tetyushkin@saritasa.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+# Framework to make backend apps
+# https://pypi.org/project/fastapi/
+fastapi = "^0.115.0"
+
+# Validate request body
+# https://pypi.org/project/pydantic/
+pydantic = "^2.9.2"
+
+# Run fastapi apps
+# https://pypi.org/project/pydantic/
+uvicorn = "^0.30.6"
+
+# Create asynchronous tasks
+# https://pypi.org/project/celery/
+celery = "^5.4.0"
+
+# Make db migrations
+# https://pypi.org/project/alembic/
+alembic = "^1.13.2"
+
+# ORM for postgres
+# https://pypi.org/project/SQLAlchemy/
+sqlalchemy = "^2.0.35"
+
+# postgresql engine for python
+# https://pypi.org/project/psycopg2-binary/
+psycopg2-binary = "^2.9.9"
+
+# library for comfortable .env management
+# https://pypi.org/project/python-decouple/
+python-decouple = "^3.8"
+
+# Async plugin for postgresql
+# https://pypi.org/project/asyncpg/
+asyncpg = "^0.29.0"
+
+# Engine for interactive with redis for celery
+# https://pypi.org/project/redis/5.0.8/
+redis = "^5.0.8"
+
+# Shortcut commands
+# https://pypi.org/project/invocations/
+invocations = "^3.3.0"
+
+# Comfortable invoke commands
+# https://github.com/saritasa-nest/saritasa-invocations
+saritasa-invocations = "^1.2.3"
+
+# Manage s3 store
+# https://pypi.org/project/boto3/
+boto3 = "^1.35.29"
+ruff = "^0.6.8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
