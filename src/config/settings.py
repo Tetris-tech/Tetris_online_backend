@@ -22,3 +22,7 @@ class Settings(Enum):
     S3_ACCESS_KEY = config("S3_ACCESS_KEY")
     S3_SECRET_KEY = config("S3_SECRET_KEY")
 
+    # Setup for JWT
+    JWT_SECRET_KEY = config("JWT_SECRET_KEY")
+    JWT_ALGORITHM = config("JWT_ALGORITHM", default="HS256")
+    JWT_EXPIRE_MINUTES = config("JWT_EXPIRE_MINUTES", default=30, cast=int)

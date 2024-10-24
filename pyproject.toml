@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Maxim Tetyushkin <maxim.tetyushkin@saritasa.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -59,6 +60,10 @@ saritasa-invocations = "^1.2.3"
 # https://pypi.org/project/boto3/
 boto3 = "^1.35.29"
 ruff = "^0.6.8"
+passlib = "^1.7.4"
+pip = "^24.2"
+python-jose = "^3.3.0"
+python-multipart = "^0.0.12"
 
 
 [build-system]
