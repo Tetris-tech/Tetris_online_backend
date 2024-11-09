@@ -38,7 +38,7 @@ class S3BucketService:
         self,
         prefix: str,
         source_file_name: str,
-        content: Union[str, bytes],
+        content: typing.Union[str, bytes],
     ) -> str:
         """Upload file object in store."""
         client = self.create_s3_client()
