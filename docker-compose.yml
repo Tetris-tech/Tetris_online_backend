@@ -1,50 +1,11 @@
 # version: '3.9'
 
 services:
-  base_app: &base_app
-    image: tetris-tech-app
-    entrypoint: /cnb/lifecycle/launcher
-    volumes:
-      -  ${PWD}/src/:/workspace/src
-
-  migration:
-    <<: *base_app
-    container_name: tetris_migrations
-    depends_on:
-      - postgres
-    entrypoint: migrations
-
-  app: &app
-    <<: *base_app
-    depends_on:
-      - migration
-      - postgres
-      - redis
-      - minio
-
-  api:
-    <<: *app
-    entrypoint: start
-    expose:
-      - 8000
-    ports:
-      - "8000:8000"
-
-  celery_worker:
-    <<: *app
-    entrypoint: celery_worker
-
-  celery_beat:
-    <<: *app
-    entrypoint: celery_beat
-
   postgres:
     image: postgres:latest
     container_name: postgres
     restart: always
     env_file: "./src/config/.env"
-    expose:
-      - 5432
     ports:
       - "5432:5432"
     volumes:
