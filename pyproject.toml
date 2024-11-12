@@ -58,7 +58,14 @@ saritasa-invocations = "^1.2.3"
 # Manage s3 store
 # https://pypi.org/project/boto3/
 boto3 = "^1.35.29"
+
+# Linter created by rust
+# https://pypi.org/project/ruff/
 ruff = "^0.6.8"
+
+# Extension for jwt managing
+# https://pypi.org/project/python-jose/
+python-jose = "^3.3.0"
 
 
 [build-system]
