@@ -18,12 +18,11 @@ allows_origins = [
 
 app.add_middleware(
     middleware_class=fastapi.middleware.cors.CORSMiddleware,
-    allows_origins=allows_origins,
+    allow_origins=allows_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 if __name__=="__main__":
     uvicorn.run(app)
