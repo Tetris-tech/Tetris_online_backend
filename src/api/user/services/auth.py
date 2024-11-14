@@ -9,14 +9,18 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from src import models
-from src.config.service import BaseService
+from src.config import BaseService, Settings
+from .. import schemas
 
-SECRET_KEY = 'your_secret_key'
+SECRET_KEY = Settings.SECRET_JWY_KEY.value
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_UNITS = 30
 
+OAUTH2_SCHEME = fastapi.security.OAuth2PasswordBearer(tokenUrl="token")
 
-class UserService(BaseService):
+
+
+class UserAuthService(BaseService):
     """Handle authentication service."""
 
     async def user_sign_up(self, user: BaseModel):
@@ -104,8 +108,18 @@ class UserService(BaseService):
 
     async def get_user_profile(
         self,
-    ) -> BaseModel:
-        """Return user info."""
+        token: str,
+    ) -> schemas.UserProfile:
+        """Return User instance by jwt token."""
+        payload = self.verify_token(token)
+        user_id = payload.get("user_id")
+        query = (
+            sqlalchemy.Select(models.User)
+            .where(models.User.id == user_id)
+        )
+        result = await self.session.execute(query)
+        db_user = result.scalar_one_or_none()
+        return db_user
 
 
     def check_password(

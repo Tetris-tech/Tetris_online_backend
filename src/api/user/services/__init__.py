@@ -1,2 +1,2 @@
-from .auth import UserService
-from .get_profile import get_user_profile
+from .auth import UserAuthService, OAUTH2_SCHEME
+from .crud import UserCRUDService
