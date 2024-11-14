@@ -22,3 +22,7 @@ class Settings(Enum):
     S3_ACCESS_KEY = config("S3_ACCESS_KEY")
     S3_SECRET_KEY = config("S3_SECRET_KEY")
 
+    # Setup for JWT generate
+
+    SECRET_JWY_KEY = config("SECRET_JWT_KEY")
+
