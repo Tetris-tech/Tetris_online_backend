@@ -15,6 +15,7 @@ app.include_router(users_router)
 allows_origins = [
     "http://localhost:4200",
     "http://localhost:8080",
+    "https://tetris-game.ru",
 ]
 
 app.add_middleware(
