@@ -1,10 +1,10 @@
 import datetime
-import hashlib
 
+import fastapi
 import fastapi.security
 import requests
 import sqlalchemy
-import fastapi
+from argon2 import PasswordHasher
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
@@ -128,12 +128,15 @@ class UserAuthService(BaseService):
         user: models.User,
     ) -> bool:
         """Check password from cred are equal to password from db."""
-        hash_session = hashlib.sha256()
-        hash_session.update(
-            bytes(password, encoding="utf-8"),
-        )
-        hash_password = hash_session.hexdigest()
-        return hash_password == getattr(user, "password", None)
+        ph = PasswordHasher()
+        try:
+            is_valid_password = ph.verify(password, getattr(user, "password", None))
+            return is_valid_password
+        except Exception as e:
+            print("Password verification failed:", str(e))
+            raise fastapi.HTTPException(
+                status_code=requests.codes.INTERNAL_SERVER_ERROR,
+            )
 
     def hash_password(
         self,
@@ -151,11 +154,10 @@ class UserAuthService(BaseService):
                     "password": "passwords don't match.",
                 }
             )
-        hash_session = hashlib.sha256()
-        hash_session.update(
-            bytes(password1, encoding="utf-8"),
-        )
-        return hash_session.hexdigest()
+        ph = PasswordHasher()
+        hashed_password = ph.hash(password1)
+
+        return hashed_password
 
     def generate_jwt_token(
             self,

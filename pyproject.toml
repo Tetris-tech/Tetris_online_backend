@@ -67,6 +67,10 @@ ruff = "^0.6.8"
 # https://pypi.org/project/python-jose/
 python-jose = "^3.3.0"
 
+# Implementation of Argon2 password hashing algorithm
+# https://pypi.org/project/argon2-cffi/
+argon2-cffi = "^23.1.0"
+
 
 [build-system]
 requires = ["poetry-core"]
