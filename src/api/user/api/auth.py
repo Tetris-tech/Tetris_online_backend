@@ -39,5 +39,7 @@ async def profile(
 async def logout(response: fastapi.Response):
     """User logout."""
     async with services.UserAuthService() as handler:
-       message = await handler.user_logout(response)
-    return message
+        await handler.user_logout(response)
+    return {
+        "message": "Successfully logged out",
+    }

@@ -111,9 +111,6 @@ class UserAuthService(BaseService):
         # For now simply remove tokens from cookies
         response.delete_cookie(key="access_token")
         response.delete_cookie(key="refresh_token")
-        return {
-            "message": "Successfully logged out",
-        }
 
     async def get_user_profile(
         self,
