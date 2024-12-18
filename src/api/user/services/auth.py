@@ -1,12 +1,13 @@
 import datetime
+import hashlib
 
-import fastapi
 import fastapi.security
 import requests
 import sqlalchemy
-from argon2 import PasswordHasher
+import fastapi
 from jose import JWTError, jwt
 from pydantic import BaseModel
+from fastapi import Response
 
 from src import models
 from src.config import BaseService, Settings
@@ -23,7 +24,7 @@ OAUTH2_SCHEME = fastapi.security.OAuth2PasswordBearer(tokenUrl="token")
 class UserAuthService(BaseService):
     """Handle authentication service."""
 
-    async def user_sign_up(self, user: BaseModel):
+    async def user_sign_up(self, user: BaseModel,response: Response)->None:
         """Create user and return one."""
         query = sqlalchemy.select(models.User).where(
             models.User.username == user.username
@@ -65,15 +66,26 @@ class UserAuthService(BaseService):
         )
         access_token = self.generate_jwt_token(data={"user_id": user.id})
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-        }
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            max_age=2592000
+        )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=True,
+            max_age=ACCESS_TOKEN_EXPIRE_UNITS * 60
+        )
 
     async def user_login(
         self,
-        user: BaseModel
-    ) -> dict[str, str]:
+        user: BaseModel,
+        response: Response
+    ) -> None:
         """Check credentials for login and return tokens for this."""
         query = (
             sqlalchemy.Select(models.User)
@@ -100,11 +112,20 @@ class UserAuthService(BaseService):
         access_token = self.generate_jwt_token(
             data={"user_id": db_user.id},
         )
-
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-        }
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True, # Can't be accessed by js
+            secure=True, # Only sent over https
+            max_age=2592000 # 30 days
+        )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly = True, # Can't be accessed by js
+            secure = True, # Only sent over https
+            max_age = ACCESS_TOKEN_EXPIRE_UNITS*60 # 30 minutes
+        )
 
     async def get_user_profile(
         self,
@@ -128,15 +149,12 @@ class UserAuthService(BaseService):
         user: models.User,
     ) -> bool:
         """Check password from cred are equal to password from db."""
-        ph = PasswordHasher()
-        try:
-            is_valid_password = ph.verify(password, getattr(user, "password", None))
-            return is_valid_password
-        except Exception as e:
-            print("Password verification failed:", str(e))
-            raise fastapi.HTTPException(
-                status_code=requests.codes.INTERNAL_SERVER_ERROR,
-            )
+        hash_session = hashlib.sha256()
+        hash_session.update(
+            bytes(password, encoding="utf-8"),
+        )
+        hash_password = hash_session.hexdigest()
+        return hash_password == getattr(user, "password", None)
 
     def hash_password(
         self,
@@ -154,10 +172,11 @@ class UserAuthService(BaseService):
                     "password": "passwords don't match.",
                 }
             )
-        ph = PasswordHasher()
-        hashed_password = ph.hash(password1)
-
-        return hashed_password
+        hash_session = hashlib.sha256()
+        hash_session.update(
+            bytes(password1, encoding="utf-8"),
+        )
+        return hash_session.hexdigest()
 
     def generate_jwt_token(
             self,
