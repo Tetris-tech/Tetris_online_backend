@@ -34,3 +34,10 @@ async def profile(
     user: models.User = fastapi.Depends(utils.get_user_profile),
 ) -> schemas.UserProfile:
     return schemas.UserProfile(**user.__dict__).model_dump()
+
+@router.get("/logout")
+async def logout(response: fastapi.Response):
+    """User logout."""
+    async with services.UserAuthService() as handler:
+       message = await handler.user_logout(response)
+    return message
