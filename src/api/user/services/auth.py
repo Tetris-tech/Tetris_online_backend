@@ -7,6 +7,7 @@ import sqlalchemy
 import fastapi
 from jose import JWTError, jwt
 from pydantic import BaseModel
+from fastapi import Response
 
 from src import models
 from src.config import BaseService, Settings
@@ -105,6 +106,11 @@ class UserAuthService(BaseService):
             "access_token": access_token,
             "refresh_token": refresh_token,
         }
+
+    async def user_logout(self, response:Response):
+        # For now simply remove tokens from cookies
+        response.delete_cookie(key="access_token")
+        response.delete_cookie(key="refresh_token")
 
     async def get_user_profile(
         self,
