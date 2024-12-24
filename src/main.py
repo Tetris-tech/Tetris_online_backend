@@ -1,9 +1,8 @@
-import fastapi
 import fastapi.middleware
 import fastapi.middleware.cors
 import uvicorn
 
-from middleware.blacklist_token_check import BlacklistTokenCheckMiddleware
+from src.middleware import BlacklistTokenCheckMiddleware
 from src.api.hello import router as hello_world
 from src.api.user.api import auth_router, users_router
 
