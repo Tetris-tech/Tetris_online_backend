@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from src import models
 from src.config import BaseService, Settings
+from src.models import RevokedToken
 from .. import schemas
 
 SECRET_KEY = Settings.SECRET_JWY_KEY.value
@@ -186,3 +187,57 @@ class UserAuthService(BaseService):
                 status_code=401,
                 detail="Could not validate credentials",
             )
+
+    async def revoke_token(self, refresh_token: str):
+        """Revoke a refresh token and store its expiration time."""
+        try:
+            # Decode the refresh token to get its expiration time
+            expiration = self.extract_expiration_from_token(refresh_token)
+
+            # Check if the token is already revoked
+            query = sqlalchemy.select(models.RevokedToken).filter(RevokedToken.refresh_token == refresh_token)
+            result = await self.session.execute(query)
+            revoked_token = result.scalars().first()
+
+            if revoked_token:
+                # Token has already been revoked
+                raise fastapi.HTTPException(
+                    status_code=400,  # BAD_REQUEST
+                    detail="Token has already been revoked",
+                )
+
+            # If the token is not revoked, revoke it by adding it to the revoked tokens table
+            new_revoked_token = models.RevokedToken(
+                refresh_token=refresh_token,
+                expires_at=expiration  # Store the same expiration time from the JWT
+            )
+            self.session.add(new_revoked_token)
+            await self.session.commit()
+
+            return {"message": "Token revoked successfully"}
+
+        except Exception as e:
+            # Catch any other exceptions (database issues, etc.)
+            raise fastapi.HTTPException(
+                status_code=500,  # Internal Server Error
+                detail="An error occurred while revoking the token",
+            )
+
+    def extract_expiration_from_token(self, token: str) -> datetime.datetime:
+        """Decode the JWT and extract the expiration time."""
+        try:
+            # Decode the JWT token to get the payload (claims)
+            decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+            # Extract the 'exp' claim (expiration time)
+            expiration_timestamp = decoded_token.get("exp")
+
+            if expiration_timestamp:
+                # Convert the Unix timestamp to a datetime object
+                expiration_time = datetime.datetime.fromtimestamp(expiration_timestamp,datetime. UTC)
+                return expiration_time
+            else:
+                raise ValueError("Expiration ('exp') not found in the token")
+
+        except JWTError as e:
+            raise ValueError(f"Invalid token: {e}")
