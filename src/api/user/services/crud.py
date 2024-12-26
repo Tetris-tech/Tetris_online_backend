@@ -58,3 +58,13 @@ class UserCRUDService(BaseService):
             )
 
         return schemas.UserProfile.model_validate(user).model_dump()
+
+
+class TokenCRUDService(BaseService):
+    """Token CRUD service to execute SQL queries."""
+
+    async def find_by_token(self, token: str) -> typing.Optional[models.RevokedToken]:
+        """Find revoked token by refresh token."""
+        query = sqlalchemy.select(models.RevokedToken).filter(models.RevokedToken.refresh_token == token)
+        result = await self.session.execute(query)
+        return result.scalars().first()  # Return the first result, or None if no match

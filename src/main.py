@@ -1,8 +1,8 @@
-import fastapi
 import fastapi.middleware
 import fastapi.middleware.cors
 import uvicorn
 
+from src.middleware import BlacklistTokenCheckMiddleware
 from src.api.hello import router as hello_world
 from src.api.user.api import auth_router, users_router
 
@@ -25,6 +25,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Define paths where token should be checked (e.g., /protected-endpoint)
+#blacklist_paths = ["/protected-endpoint", "/some/other/path"]
+blacklist_paths = []
+
+# Add middleware
+app.add_middleware(BlacklistTokenCheckMiddleware, paths=blacklist_paths)
 
 if __name__=="__main__":
     uvicorn.run(app)
