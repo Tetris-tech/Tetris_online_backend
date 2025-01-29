@@ -66,6 +66,8 @@ ruff = "^0.6.8"
 # Extension for jwt managing
 # https://pypi.org/project/python-jose/
 python-jose = "^3.3.0"
+fastapi-admin = "^1.0.4"
+sqladmin = "^0.20.1"
 
 
 [build-system]

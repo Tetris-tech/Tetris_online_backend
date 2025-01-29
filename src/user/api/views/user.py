@@ -2,7 +2,7 @@ import typing
 
 import fastapi
 
-from .. import services
+from ... import db_services
 
 router = fastapi.APIRouter(prefix="/users", tags=["users"])
 
@@ -12,7 +12,7 @@ async def get_list(
     size: int = fastapi.Query(25, ge=1, le=25),
 ) -> dict[str, typing.Any]:
     """Return list of users."""
-    async with services.UserCRUDService() as service:
+    async with db_services.UserCRUDService() as service:
         result = await service.get_list(offset, size)
 
     return result
@@ -23,6 +23,6 @@ async def get_one(
     id: int,
 ) -> dict[str, typing.Any]:
     "Return user by id."
-    async with services.UserCRUDService() as service:
+    async with db_services.UserCRUDService() as service:
         result = await service.get_one(id)
     return result

@@ -32,10 +32,10 @@ ns.configure(
                 app="src.main:app",
             ),
             alembic=saritasa_invocations.AlembicSettings(
-                migrations_folder="src/migrations/versions",
+                migrations_folder="migrations/versions",
             ),
             celery=saritasa_invocations.CelerySettings(
-                app="src.config.celery.app",
+                app="config.celery.app",
                 scheduler="celery.beat.PersistentScheduler",
             )
         )

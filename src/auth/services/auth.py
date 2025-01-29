@@ -9,9 +9,10 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from fastapi import Response
 
-from src import models
-from src.config import BaseService, Settings
-from .. import schemas
+from src.user import models
+from config import Settings
+from src.core.db import BaseService
+from src.user.api.schemes import UserProfile
 
 SECRET_KEY = Settings.SECRET_JWY_KEY.value
 ALGORITHM = 'HS256'
@@ -130,7 +131,7 @@ class UserAuthService(BaseService):
     async def get_user_profile(
         self,
         token: str,
-    ) -> schemas.UserProfile:
+    ) -> UserProfile:
         """Return User instance by jwt token."""
         payload = self.verify_token(token)
         user_id = payload.get("user_id")

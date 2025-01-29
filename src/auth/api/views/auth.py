@@ -2,16 +2,17 @@ import typing
 
 import fastapi
 
-from src import models
+from src.user import models
+from src.user.api.schemes import UserProfile
 
-from .. import schemas, services
-from . import utils
+from .. import schemes
+from ... import services
 
 router = fastapi.APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/sign-up")
 async def sign_up(
-    user: schemas.UserSignUp,
+    user: schemes.UserSignUp,
     response: fastapi.Response,
 ) -> dict[str, typing.Any]:
     """User sign up."""
@@ -24,7 +25,7 @@ async def sign_up(
 
 @router.post("/login")
 async def login(
-    user: schemas.UserLogin,
+    user: schemes.UserLogin,
     response: fastapi.Response
 ) -> dict[str, typing.Any]:
     """User login."""
@@ -38,6 +39,6 @@ async def login(
 
 @router.get("/profile")
 async def profile(
-    user: models.User = fastapi.Depends(utils.get_user_profile),
-) -> schemas.UserProfile:
-    return schemas.UserProfile(**user.__dict__).model_dump()
+    user: models.User = fastapi.Depends(services.get_user_profile),
+) -> UserProfile:
+    return UserProfile(**user.__dict__).model_dump()

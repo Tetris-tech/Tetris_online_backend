@@ -1,6 +1,6 @@
 import sqlalchemy
 
-from src.config.database import BaseModel
+from src.core.models import BaseModel
 
 
 class Friend(BaseModel):

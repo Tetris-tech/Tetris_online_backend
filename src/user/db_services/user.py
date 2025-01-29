@@ -4,11 +4,12 @@ import fastapi
 
 import sqlalchemy
 
-from src.config import BaseService
+from src.core.db import BaseService
 
-from src import models
+from .. import models
+from ..api import schemes
 
-from .. import schemas
+from ..api import schemes
 
 class UserCRUDService(BaseService):
     """User CRUD service to execute SQL queries."""
@@ -37,7 +38,7 @@ class UserCRUDService(BaseService):
         )
         return {
             "users": [
-                schemas.UserProfile.model_validate(record[0]).model_dump()
+                schemes.UserProfile.model_validate(record[0]).model_dump()
                 for record in users.fetchall()
             ],
             "total_count": total_count.scalar()
@@ -57,4 +58,4 @@ class UserCRUDService(BaseService):
                 }
             )
 
-        return schemas.UserProfile.model_validate(user).model_dump()
+        return schemes.UserProfile.model_validate(user).model_dump()
