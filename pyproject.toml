@@ -66,7 +66,7 @@ python-decouple = "^3.8"
 
 # Async plugin for postgresql
 # https://pypi.org/project/asyncpg/
-asyncpg = "^0.29.0"
+asyncpg = "^0.30.0"
 
 # Engine for interactive with redis for celery
 # https://pypi.org/project/redis/5.0.8/

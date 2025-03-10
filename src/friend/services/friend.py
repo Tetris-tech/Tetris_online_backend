@@ -4,19 +4,19 @@ import fastapi
 import sqlalchemy
 from fastapi import Depends, HTTPException
 import fastapi.security
-# HACK: Is it correct to import from user package here?
-from ...user  import schemas as user_schemas
-from ...user import api
-from src import models
-from src.config import BaseService
-from ...user.services import UserAuthService
 
+from src.auth.services import UserAuthService
+from src.core.db import BaseService
+# HACK: Is it correct to import from user package here?
+from src.user.api import schemes as user_schemas
+from src.auth import services
+from src.user import models
 OAUTH2_SCHEME = fastapi.security.OAuth2PasswordBearer(tokenUrl="token")
 
 
 async def get_current_user(
         token: str = Depends(OAUTH2_SCHEME),
-        service: api.auth.services.UserAuthService = Depends(UserAuthService),
+        service: services.UserAuthService = Depends(UserAuthService),
 ) -> user_schemas.UserProfile:
     """Dependency to get current user from token."""
     try:

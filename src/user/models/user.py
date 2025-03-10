@@ -2,12 +2,11 @@ import hashlib
 
 import sqlalchemy
 
-from src.api.friend.schemas import FriendStatus
-from src.config.database import BaseModel
+from src.friend.api.schemas import FriendStatus
 from src.core.models import BaseModel
 
 
-class Friend(BaseModel):
+class Friend(BaseModel): #TODO: since models now belong to a api package, might be a good idea to move it to friend api?
     """Model to save friend relations."""
 
     __tablename__ = "friend"

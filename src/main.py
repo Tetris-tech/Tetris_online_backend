@@ -1,11 +1,8 @@
 import fastapi.middleware
-import fastapi.middleware
 import fastapi.middleware.cors
 from sqladmin import Admin
 
-from src.api.friend.api import friend_router
-from src.api.hello import router as hello_world
-from src.api.user.api import auth_router, users_router
+from src.friend.api import friend_router
 import config
 import fastapi_mail
 from src.auth.api import views as auth_views

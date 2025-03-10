@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
 from ..services.friend import get_current_user
 from .. import services
-from ...user import schemas
+from src.user.api import schemes as schemas # Todo: Schemes is a typo?
 router = APIRouter(prefix="/friends", tags=["friends"])
 
 
