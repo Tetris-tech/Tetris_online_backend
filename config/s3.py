@@ -1,11 +1,10 @@
+import typing
 from io import BytesIO
 from pathlib import Path
-import typing
 
 import boto3
 from botocore.client import Config
-from botocore.exceptions import ClientError
-from botocore.response import StreamingBody
+
 
 class S3BucketService:
     """Service to manage interactive with s3 store."""

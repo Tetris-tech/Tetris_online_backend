@@ -1,5 +1,6 @@
-import pydantic
 import datetime
+
+import pydantic
 
 
 class TimeStampModel(pydantic.BaseModel):

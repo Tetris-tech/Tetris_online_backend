@@ -1,5 +1,9 @@
 import sqlalchemy
+
 from config.database import Base
+
+from .db import open_session
+
 
 class BaseModel(Base):
     """Base model with general fields."""
@@ -24,3 +28,8 @@ class BaseModel(Base):
         default=sqlalchemy.func.now(),
         onupdate=sqlalchemy.func.current_timestamp(),
     )
+
+    async def delete(self) -> None:
+        async with open_session() as session:
+            await session.delete(self)
+            await session.commit()

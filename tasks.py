@@ -1,5 +1,5 @@
-import saritasa_invocations
 import invoke
+import saritasa_invocations
 
 import invocations
 
@@ -9,6 +9,8 @@ ns = invoke.Collection(
     saritasa_invocations.fastapi,
     saritasa_invocations.alembic,
     saritasa_invocations.celery,
+    saritasa_invocations.pytest,
+    saritasa_invocations.pre_commit,
     invocations.project,
 )
 
@@ -26,6 +28,8 @@ ns.configure(
                     "redis",
                     "minio",
                     "minio-create-bucket",
+                    "mailpit",
+                    "nginx",
                 ),
             ),
             fastapi=saritasa_invocations.FastAPISettings(
@@ -37,7 +41,10 @@ ns.configure(
             celery=saritasa_invocations.CelerySettings(
                 app="config.celery.app",
                 scheduler="celery.beat.PersistentScheduler",
-            )
-        )
-    }
+            ),
+            pre_commit=saritasa_invocations.PreCommitSettings(
+                hooks=["pre-commit", "pre-push"],
+            ),
+        ),
+    },
 )

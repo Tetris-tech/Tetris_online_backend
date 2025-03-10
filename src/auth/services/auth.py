@@ -1,131 +1,112 @@
 import datetime
-import hashlib
+import http
 
-import fastapi.security
-import requests
-import sqlalchemy
 import fastapi
+import fastapi.security
+import sqlalchemy
+from fastapi import Response
 from jose import JWTError, jwt
 from pydantic import BaseModel
-from fastapi import Response
 
-from src.user import models
 from config import Settings
-from src.core.db import BaseService
+from src.core.db import open_session
+from src.user import models
 from src.user.api.schemes import UserProfile
 
 SECRET_KEY = Settings.SECRET_JWY_KEY.value
-ALGORITHM = 'HS256'
+ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_UNITS = 30
 
 OAUTH2_SCHEME = fastapi.security.OAuth2PasswordBearer(tokenUrl="token")
 
 
-
-class UserAuthService(BaseService):
+class UserAuthService:
     """Handle authentication service."""
 
-    async def user_sign_up(self, user: BaseModel,response: Response)->None:
-        """Create user and return one."""
-        query = sqlalchemy.select(models.User).where(
-            models.User.username == user.username
-        )
-        result = await self.session.execute(query)
-        result = result.scalar_one_or_none()
-
-        if result:
-            raise fastapi.HTTPException(
-                status_code=requests.codes.BAD_REQUEST,
-                detail={
-                    "username": "User with the username already exist",
-                }
-            )
-
-        if user.password1 != user.password2:
-            raise fastapi.HTTPException(
-                status_code=requests.codes.BAD_REQUEST,
-                detail={
-                    "password": "passwords don't match.",
-                }
-            )
-
-        user = user.model_dump()
-        password = self.hash_password(
-            password1=user.pop("password1", None),
-            password2=user.pop("password2", None),
-        )
-        user["password"] = password
-        user = models.User(**user)
-        self.session.add(user)
-
-        await self.session.commit()
-        await self.session.refresh(user)
-
-        refresh_token = self.generate_jwt_token(
-            data={"user_id": user.id},
-            is_refresh=True,
-        )
-        access_token = self.generate_jwt_token(data={"user_id": user.id})
-
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            secure=True,
-            max_age=2592000
-        )
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            secure=True,
-            max_age=ACCESS_TOKEN_EXPIRE_UNITS * 60
-        )
-
-    async def user_login(
-        self,
+    @classmethod
+    async def user_sign_up(
+        cls,
         user: BaseModel,
-        response: Response
-    ) -> None:
-        """Check credentials for login and return tokens for this."""
-        query = (
-            sqlalchemy.Select(models.User)
-            .where(models.User.username == user.username)
-        )
-        result = await self.session.execute(query)
-        db_user = result.scalar_one_or_none()
-        password_right = self.check_password(
-            user.password,
-            db_user,
-        )
-        if not (db_user and password_right):
-            raise fastapi.HTTPException(
-                status_code=requests.codes.BAD_REQUEST,
-                detail={
-                    "message": "Incorrect username or password",
-                },
+        response: Response,
+    ) -> models.User:
+        """Create user and return it."""
+        errors_dict = {}
+        user_exists = await cls._check_user_exists(username=user.username)
+        if user_exists:
+            errors_dict["username"] = "User with the username already exist"
+
+        user_data = user.model_dump()
+        password1 = user_data.pop("password1")
+        password2 = user_data.pop("password2")
+        if password1 and password1 != password2:
+            errors_dict["password"] = "Passwords don't match"
+
+        if errors_dict:
+            raise fastapi.exceptions.HTTPException(
+                status_code=http.HTTPStatus.BAD_REQUEST,
+                detail=errors_dict,
             )
 
-        refresh_token = self.generate_jwt_token(
-            data={"user_id": db_user.id},
-            is_refresh=True,
-        )
-        access_token = self.generate_jwt_token(
-            data={"user_id": db_user.id},
-        )
+        user = models.User(**user_data)
+        user.set_password(password1)
+        async with open_session() as session:
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
+
+        access_token, refresh_token = cls._get_token_pair(user_id=user.id)
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
-            httponly=True, # Can't be accessed by js
-            secure=True, # Only sent over https
-            max_age=2592000 # 30 days
+            httponly=True,
+            secure=True,
+            max_age=2592000,
         )
         response.set_cookie(
             key="access_token",
             value=access_token,
-            httponly = True, # Can't be accessed by js
-            secure = True, # Only sent over https
-            max_age = ACCESS_TOKEN_EXPIRE_UNITS*60 # 30 minutes
+            httponly=True,
+            secure=True,
+            max_age=ACCESS_TOKEN_EXPIRE_UNITS * 60,
+        )
+        return user
+
+    @classmethod
+    async def user_login(cls, user: BaseModel, response: Response) -> None:
+        """Check credentials for login and return tokens for this."""
+        user_exists: models.User | None = await cls._check_user_exists(
+            username=user.username,
+        )
+        error_dict = {
+            "login": "Incorrect username or password",
+        }
+        if not user_exists:
+            raise fastapi.HTTPException(
+                status_code=http.HTTPStatus.BAD_REQUEST,
+                detail=error_dict,
+            )
+        if not user_exists.check_password(user.password):
+            raise fastapi.HTTPException(
+                status_code=http.HTTPStatus.BAD_REQUEST,
+                detail=error_dict,
+            )
+        access_token, refresh_token = cls._get_token_pair(
+            user_id=user_exists.id,
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,  # Can't be accessed by js
+            secure=True,  # Only sent over https
+            max_age=2592000,  # 30 days
+        )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,  # Can't be accessed by js
+            secure=True,  # Only sent over https
+            max_age=ACCESS_TOKEN_EXPIRE_UNITS * 60,  # 30 minutes
         )
 
     async def get_user_profile(
@@ -135,60 +116,38 @@ class UserAuthService(BaseService):
         """Return User instance by jwt token."""
         payload = self.verify_token(token)
         user_id = payload.get("user_id")
-        query = (
-            sqlalchemy.Select(models.User)
-            .where(models.User.id == user_id)
+        async with open_session() as session:
+            user = await session.get(models.User, user_id)
+        return user
+
+    @classmethod
+    def _get_token_pair(
+        cls,
+        user_id: int,
+    ) -> tuple[str, str]:
+        """Return jwt token pair."""
+        refresh_token = cls._generate_jwt_token(
+            data={
+                "user_id": user_id,
+            },
+            is_refresh=True,
         )
-        result = await self.session.execute(query)
-        db_user = result.scalar_one_or_none()
-        return db_user
-
-
-    def check_password(
-        self,
-        password: str,
-        user: models.User,
-    ) -> bool:
-        """Check password from cred are equal to password from db."""
-        hash_session = hashlib.sha256()
-        hash_session.update(
-            bytes(password, encoding="utf-8"),
+        access_token = cls._generate_jwt_token(
+            data={
+                "user_id": user_id,
+            },
         )
-        hash_password = hash_session.hexdigest()
-        return hash_password == getattr(user, "password", None)
+        return access_token, refresh_token
 
-    def hash_password(
-        self,
-        password1: str,
-        password2: str,
-    ) -> str:
-        """Hash password."""
-        if (
-            password1
-            and password1 != password2
-        ):
-            raise fastapi.HTTPException(
-                status_code=400,
-                detail={
-                    "password": "passwords don't match.",
-                }
-            )
-        hash_session = hashlib.sha256()
-        hash_session.update(
-            bytes(password1, encoding="utf-8"),
-        )
-        return hash_session.hexdigest()
-
-    def generate_jwt_token(
-            self,
-            data: dict,
-            is_refresh: bool = True,
+    @classmethod
+    def _generate_jwt_token(
+        cls,
+        data: dict,
+        is_refresh: bool = True,
     ) -> str:
         """Return jwt token generated by user metadata."""
         to_encode = data.copy()
-        time_type = "minuets"
-        if is_refresh:
-            time_type="days"
+        time_type = "days" if is_refresh else "minuets"
 
         expiring_time = datetime.timedelta(
             **{time_type: ACCESS_TOKEN_EXPIRE_UNITS},
@@ -208,3 +167,15 @@ class UserAuthService(BaseService):
                 status_code=401,
                 detail="Could not validate credentials",
             )
+
+    @classmethod
+    async def _check_user_exists(cls, username: str) -> bool:
+        """Raise 400 if user with specified username exists."""
+        query = sqlalchemy.select(models.User).where(
+            models.User.username == username,
+        )
+        async with open_session() as session:
+            result = await session.execute(query)
+            result = result.scalar_one_or_none()
+
+        return result

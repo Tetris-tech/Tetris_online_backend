@@ -1,6 +1,8 @@
 import pydantic
 
+
 class UserLogin(pydantic.BaseModel):
-    """Class to login"""
+    """Class to login."""
+
     username: str
     password: str

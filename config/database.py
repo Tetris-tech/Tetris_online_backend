@@ -1,24 +1,18 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import sqlalchemy
-
+from sqlalchemy import URL
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
 
 from .settings import Settings
 
-DATABASE_URL = "postgresql+asyncpg://{}:{}@{}:5432/{}?async_fallback=True".format(
-    Settings.DB_USER.value,
-    Settings.DB_PASSWORD.value,
-    Settings.DB_HOST.value,
-    Settings.DB_NAME.value
+DATABASE_URL = URL.create(
+    "postgresql+asyncpg",
+    username=Settings.DB_USER.value,
+    password=Settings.DB_PASSWORD.value,
+    host=Settings.DB_HOST.value,
+    database=Settings.DB_NAME.value,
 )
-
-Base = declarative_base()
-
 engine = create_async_engine(DATABASE_URL, echo=True)
 
-async_session = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+session_factory = async_sessionmaker(bind=engine, expire_on_commit=False)
+
+Base = declarative_base()

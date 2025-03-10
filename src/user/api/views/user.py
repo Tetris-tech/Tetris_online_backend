@@ -6,6 +6,7 @@ from ... import db_services
 
 router = fastapi.APIRouter(prefix="/users", tags=["users"])
 
+
 @router.get("")
 async def get_list(
     offset: int = fastapi.Query(0, ge=0),

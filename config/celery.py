@@ -8,7 +8,7 @@ BROKER_URL = "redis://{}:{}/0".format(
 )
 
 app = Celery(__name__)
-app.conf.broker_url = BROKER_URL,
+app.conf.broker_url = (BROKER_URL,)
 app.conf.result_backend = BROKER_URL
 
 app.conf.beat_schedule = {}

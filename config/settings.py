@@ -2,6 +2,7 @@ from enum import Enum
 
 from decouple import config
 
+
 class Settings(Enum):
     """Configuration for project."""
 
@@ -25,4 +26,3 @@ class Settings(Enum):
     # Setup for JWT generate
 
     SECRET_JWY_KEY = config("SECRET_JWT_KEY")
-

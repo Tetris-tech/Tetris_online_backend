@@ -7,7 +7,7 @@ def init(
     context: invoke.Context,
     clean: bool = False,
 ) -> None:
-    """Setup project"""
+    """Setup project."""
     saritasa_invocations.print_success("Start project setup")
 
     if clean:
@@ -22,8 +22,7 @@ def init(
 def restart(
     context: invoke.Context,
 ) -> None:
-    "Restart project",
+    ("Restart project",)
     saritasa_invocations.print_success("Start project restart")
     init(context, clean=True)
     saritasa_invocations.print_success("Restart is completed")
-
