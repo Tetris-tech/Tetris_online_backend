@@ -1,9 +1,34 @@
 [tool.poetry]
-name = "tetris-online-backend"
-version = "0.1.0"
-description = ""
-authors = ["Maxim Tetyushkin <maxim.tetyushkin@saritasa.com>"]
-readme = "README.md"
+package-mode = false
+
+[tool.ruff]
+line-length = 79
+exclude = [
+    ".venv",
+    ".git",
+    ".vscode",
+    "poetry.lock",
+    "alembic.ini",
+    "docker-compose.yml",
+    "Dockerfile",
+    ".gitignore",
+    "MakeFile",
+    "LICENSE",
+    "Procfile",
+    "*toml",
+    "*md",
+]
+
+[tool.ruff.lint]
+exclude = [
+    "*/__init__.py"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -66,6 +91,34 @@ ruff = "^0.6.8"
 # Extension for jwt managing
 # https://pypi.org/project/python-jose/
 python-jose = "^3.3.0"
+
+# Database admin panel for debugging
+# https://github.com/aminalaee/sqladmin
+sqladmin = "^0.20.1"
+
+# Create and run API tests
+# https://github.com/pytest-dev/pytest
+pytest = "^8.3.4"
+
+# Generate fake instances for db
+# https://github.com/FactoryBoy/factory_boy
+factory-boy = "^3.3.1"
+
+# Initialize async client
+# https://www.python-httpx.org/
+httpx = "^0.28.1"
+
+# Run asynchronous tests
+# https://github.com/pytest-dev/pytest-asyncio
+pytest-asyncio = "^0.25.3"
+
+# Run pre commit hooks
+# https://github.com/pre-commit/pre-commit
+pre-commit = "^4.1.0"
+
+# Sending email
+# https://github.com/sabuhish/fastapi-mail
+fastapi-mail = "^1.4.2"
 
 
 [build-system]

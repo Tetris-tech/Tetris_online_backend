@@ -42,7 +42,7 @@ services:
     image: postgres:latest
     container_name: postgres
     restart: always
-    env_file: "./src/config/.env"
+    env_file: "./config/.env"
     expose:
       - 5432
     ports:
@@ -56,6 +56,26 @@ services:
     restart: always
     ports:
       - "6379:6379"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    restart: always
+    volumes:
+      - email_data:/data
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    environment:
+      MP_DATABASE: /data/mailpit.db
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.d:/etc/nginx/
+    ports:
+      - "80:80"
+      - "443:443"
 
   minio:
     image: minio/minio:latest
@@ -86,3 +106,4 @@ services:
 volumes:
   data:
   minio_data:
+  email_data:

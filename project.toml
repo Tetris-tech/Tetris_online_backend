@@ -13,5 +13,6 @@ exclude = [
     ".vscode",
     "docs",
     "docker-compose.yml",
-    "src/tests"
+    "src/tests",
+    "nginx.d"
 ]

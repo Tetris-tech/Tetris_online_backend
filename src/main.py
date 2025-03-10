@@ -1,17 +1,38 @@
 import fastapi.middleware
 import fastapi.middleware
 import fastapi.middleware.cors
-import uvicorn
+from sqladmin import Admin
 
 from src.api.friend.api import friend_router
 from src.api.hello import router as hello_world
 from src.api.user.api import auth_router, users_router
+import config
+import fastapi_mail
+from src.auth.api import views as auth_views
+from src.user import admin
+from src.user.api import views as user_views
 
 app = fastapi.FastAPI()
+admin_core = Admin(app, engine=config.engine)
+admin_core.add_view(admin.UserAdmin)
 
-app.include_router(hello_world)
-app.include_router(auth_router)
-app.include_router(users_router)
+@app.get("/aboba")
+async def send_email():
+    message = fastapi_mail.MessageSchema(
+        subject="Test email sending message",
+        recipients=["test@mail.ru"],
+        body="""
+            <p>Thanks for using Fastapi-mail</p>
+        """,
+        subtype=fastapi_mail.MessageType.html,
+    )
+    fm = fastapi_mail.FastMail(config.email_config)
+    await fm.send_message(message)
+
+    return {"status": "Ready"}
+
+app.include_router(auth_views.auth_router)
+app.include_router(user_views.user_router)
 
 app.include_router(friend_router)
 
@@ -28,6 +49,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-if __name__=="__main__":
-    uvicorn.run(app)
