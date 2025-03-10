@@ -1,5 +1,6 @@
 import sqlalchemy
 
+from src.api.friend.schemas import FriendStatus
 from src.config.database import BaseModel
 
 
@@ -16,6 +17,11 @@ class Friend(BaseModel):
         sqlalchemy.INTEGER,
         sqlalchemy.ForeignKey("users.id"),
         name="recipient_id",
+    )
+    status = sqlalchemy.Column(
+        sqlalchemy.Enum(FriendStatus),
+        default=FriendStatus.PENDING,
+        nullable=False
     )
 
     __table_args__ = (

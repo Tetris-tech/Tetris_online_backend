@@ -1,8 +1,9 @@
-import fastapi
+import fastapi.middleware
 import fastapi.middleware
 import fastapi.middleware.cors
 import uvicorn
 
+from src.api.friend.api import friend_router
 from src.api.hello import router as hello_world
 from src.api.user.api import auth_router, users_router
 
@@ -11,6 +12,8 @@ app = fastapi.FastAPI()
 app.include_router(hello_world)
 app.include_router(auth_router)
 app.include_router(users_router)
+
+app.include_router(friend_router)
 
 allows_origins = [
     "http://localhost:4200",
