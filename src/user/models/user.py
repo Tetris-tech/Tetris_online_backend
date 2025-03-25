@@ -1,4 +1,5 @@
 import hashlib
+from datetime import datetime, timezone
 
 import sqlalchemy
 
@@ -10,7 +11,7 @@ class Friend(BaseModel): #TODO: since models now belong to a api package, might 
     """Model to save friend relations."""
 
     __tablename__ = "friend"
-
+# TODO: add indexes on sender_id and recipient_id (or use a materialized view)
     sender_id = sqlalchemy.Column(
         sqlalchemy.INTEGER,
         sqlalchemy.ForeignKey("users.id"),
@@ -24,7 +25,15 @@ class Friend(BaseModel): #TODO: since models now belong to a api package, might 
     status = sqlalchemy.Column(
         sqlalchemy.Enum(FriendStatus),
         default=FriendStatus.PENDING,
-        nullable=False
+        nullable=False,
+        name="status"
+    )
+    # Column to track the friendship duration, i.e. when friendship got accepted
+    # TODO: Add corresponding logic
+    created_at = sqlalchemy.Column(
+        sqlalchemy.DateTime,
+        default=datetime.now(timezone.utc),
+        name="created_at"
     )
 
     __table_args__ = (

@@ -7,10 +7,12 @@ import fastapi.security
 
 from src.auth.services import UserAuthService
 from src.core.db import BaseService
+from src.friend.api.schemas import FriendStatus
 # HACK: Is it correct to import from user package here?
 from src.user.api import schemes as user_schemas
 from src.auth import services
 from src.user import models
+from src.user.api import schemes as schemas
 OAUTH2_SCHEME = fastapi.security.OAuth2PasswordBearer(tokenUrl="token")
 
 
@@ -39,9 +41,10 @@ class FriendCRUDService(BaseService):
         # Check existing request
         existing = await self.session.execute(
             sqlalchemy.select(models.Friend).where(
-                (models.Friend.sender_id == sender_id) &
-                (models.Friend.recipient_id == recipient_id)
-
+                ((models.Friend.sender_id == sender_id) &
+                 (models.Friend.recipient_id == recipient_id)) |
+                ((models.Friend.sender_id == recipient_id) &
+                 (models.Friend.recipient_id == sender_id))
             )
         )
         if existing.scalar():
@@ -62,6 +65,8 @@ class FriendCRUDService(BaseService):
             new_status: str
     ) -> dict[str, typing.Any]:
         """Update request status."""
+        if new_status not in [status.value for status in FriendStatus]:
+            raise HTTPException(status_code=400, detail="Invalid status")
         request = await self.session.get(models.Friend, request_id)
         if not request or request.recipient_id != recipient_id:
             raise fastapi.HTTPException(
@@ -82,7 +87,7 @@ class FriendCRUDService(BaseService):
     ) -> typing.List[dict[str, typing.Any]]:
         """Get pending requests for user."""
         result = await self.session.execute(
-            sqlalchemy.where(
+            sqlalchemy.select(models.Friend).where(
                 (models.Friend.recipient_id == user_id) &
                 (models.Friend.status == "pending")
             )
@@ -142,3 +147,44 @@ class FriendCRUDService(BaseService):
 
         return friends
 
+    async def delete_friend(
+            self,
+            current_user: schemas.UserProfile,
+            friend_id: int
+    ):
+        """Delete friend relationship."""
+        # Validate input
+        if friend_id == current_user.id:
+            raise HTTPException(400, "Cannot unfriend yourself")
+
+        # Check friend exists
+        friend_user = await self.session.get(models.User, friend_id)
+        if not friend_user:
+            raise HTTPException(404, "User not found")
+
+        # Find friendship
+        friendship_query = sqlalchemy.select(models.Friend).where(
+            (
+                    (models.Friend.sender_id == current_user.id) |
+                    (models.Friend.recipient_id == current_user.id)
+            ) &
+            (
+                    (models.Friend.sender_id == friend_id) |
+                    (models.Friend.recipient_id == friend_id)
+            ) &
+            (models.Friend.status == FriendStatus.ACCEPTED)
+        )
+
+        friendship = await self.session.scalar(friendship_query)
+        if not friendship:
+            raise HTTPException(404, "Friendship not found")
+
+        # Update status (soft delete)
+        await self.session.execute(
+            sqlalchemy.update(models.Friend)
+            .where(models.Friend.id == friendship.id)
+            .values(status=FriendStatus.REMOVED)
+        )
+
+        await self.session.commit()
+        return {"message": "Friend removed"}

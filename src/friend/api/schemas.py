@@ -4,4 +4,5 @@ class FriendStatus(str, Enum):
     PENDING = "pending"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
+    REMOVED = "removed"
 
