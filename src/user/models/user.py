@@ -47,11 +47,6 @@ class User(BaseModel):
         name="password",
         nullable=False,
     )
-    rating = sqlalchemy.Column(
-        sqlalchemy.INTEGER,
-        name="rating",
-        default=0,
-    )
     is_active = sqlalchemy.Column(
         sqlalchemy.Boolean,
         name="is_active",
