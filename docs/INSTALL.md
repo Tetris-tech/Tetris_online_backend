@@ -5,6 +5,8 @@
 - [uv](https://docs.astral.sh/uv/)
 - [poetry](https://python-poetry.org/docs/)
 - [docker](https://docs.docker.com/)
+- [pack-cli](https://buildpacks.io/docs/for-platform-operators/how-to/integrate-ci/pack/)
+- [make utility](https://www.gnu.org/software/make/)
 
 If you use zsh, command below provide autocomplete for invoke command
 
@@ -12,7 +14,7 @@ If you use zsh, command below provide autocomplete for invoke command
 source <(inv --print-completion-script zsh)
 ```
 
-## Installation
+## Installation (wihout buildpack)
 
 1. Install environment
 
@@ -31,3 +33,24 @@ inv project.init
 ```
 inv fastapi.run
 ```
+
+## Installation (with buildpack)
+
+1. Build image via buildpack
+
+```
+
+make build
+
+```
+
+2. Run application
+
+```
+make up
+```
+P.S.: Other commands with `make` see in `Makefile`
+
+## Installation (with k8s)
+
+Soon...
