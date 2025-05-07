@@ -19,8 +19,6 @@ services:
     depends_on:
       - migration
       - postgres
-      - redis
-      - minio
 
   api:
     <<: *app
@@ -29,14 +27,6 @@ services:
       - 8000
     ports:
       - "8000:8000"
-
-  celery_worker:
-    <<: *app
-    entrypoint: celery_worker
-
-  celery_beat:
-    <<: *app
-    entrypoint: celery_beat
 
   postgres:
     image: postgres:latest
@@ -50,60 +40,5 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    restart: always
-    ports:
-      - "6379:6379"
-
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: mailpit
-    restart: always
-    volumes:
-      - email_data:/data
-    ports:
-      - "8025:8025"
-      - "1025:1025"
-    environment:
-      MP_DATABASE: /data/mailpit.db
-
-  nginx:
-    image: nginx
-    volumes:
-      - ./nginx.d:/etc/nginx/
-    ports:
-      - "80:80"
-      - "443:443"
-
-  minio:
-    image: minio/minio:latest
-    command: server --address 0.0.0.0:9001 --console-address 0.0.0.0:9000 /data
-    environment:
-      - MINIO_ROOT_USER=root
-      - MINIO_ROOT_PASSWORD=rootroot
-      - MINIO_DOMAIN=s3.minio.localhost
-    ports:
-      - "9001:9001"
-      - "9000:9000"
-    volumes:
-      - minio_data:/data
-
-
-  minio-create-bucket:
-    image: minio/mc
-    depends_on:
-      - minio
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set s3minio http://minio:9001 root rootroot;
-      /usr/bin/mc mb s3minio/tetric-online-files;
-      /usr/bin/mc anonymous set public s3minio/tetris-online-files;
-      exit 0;
-      "
-
 volumes:
   data:
-  minio_data:
-  email_data:
