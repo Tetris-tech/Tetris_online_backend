@@ -39,9 +39,7 @@ inv fastapi.run
 1. Build image via buildpack
 
 ```
-
 make build
-
 ```
 
 2. Run application
