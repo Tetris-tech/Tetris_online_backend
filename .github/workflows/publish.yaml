@@ -1,0 +1,22 @@
+name: Deployment
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    register:
+        runs-on: ubuntu-latest
+        steps:
+          - id: checkout
+            name: checkout
+            uses: actions/checkout@v3
+
+          - id: setup-tools
+            name: install tools for build pack
+            uses: buildpacks/github-actions/setup-tools@v5.1.0
+
+          - id: setup-pack
+            name: install client for build pack
+            uses: buildpacks/github-actions/setup-pack@v5.1.0

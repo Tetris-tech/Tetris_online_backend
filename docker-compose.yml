@@ -4,8 +4,7 @@ services:
   base_app: &base_app
     image: maxtet1703/tetris-backend-v1
     entrypoint: /cnb/lifecycle/launcher
-    volumes:
-      -  ${PWD}/src/:/workspace/src
+
 
   migration:
     <<: *base_app
