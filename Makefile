@@ -1,6 +1,5 @@
 build:
-	pack build tetris-tech-app --buildpack paketo-buildpacks/python \
-	--builder paketobuildpacks/builder-jammy-base
+	pack build maxtet1703/tetris-backend-v1:latest --buildpack paketo-buildpacks/python --builder paketobuildpacks/builder-jammy-base
 up:
 	docker compose up --build
 up_prod:

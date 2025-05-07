@@ -1,8 +1,8 @@
-[[build.env]]
-    name = 'BP_CPYTHON_VERSION'
-    value = '3.12.*'
-
 [build]
+    [[build.env]]
+        name = 'BP_CPYTHON_VERSION'
+        value = '3.12.*'
+
 exclude = [
     ".venv",
     ".gitignore",
