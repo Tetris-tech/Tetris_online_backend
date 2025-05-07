@@ -1,0 +1,11 @@
+apiVersion: batch/v1beta1
+kind: Job
+metadata:
+  name: tetris-core-job
+  namespace: tetris-backend
+spec:
+  containers:
+    - name: tetris-core-job
+      image: tetris-tech-app
+      imagePullPolicy: IfNotPresent
+      command: ["/cnb/lifecycle/launcher", "migrations"]

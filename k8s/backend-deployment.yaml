@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tetris-core
+  namespace: tetris-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: tetris-core
+  template:
+    metadata:
+      labels:
+        name: tetris-core
+    spec:
+      containers:
+        - name: tetris-core
+          image: tetris-tech-app
+          imagePullPolicy: IfNotPresent
+          command: ["/cnb/lifecycle/launcher", "start"]
+          ports:
+            - containerPort: 8000

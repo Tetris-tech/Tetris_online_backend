@@ -14,5 +14,6 @@ exclude = [
     "docs",
     "docker-compose.yml",
     "src/tests",
-    "nginx.d"
+    "nginx.d",
+    "k8s",
 ]
